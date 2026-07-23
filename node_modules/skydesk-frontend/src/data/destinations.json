@@ -1,0 +1,62 @@
+[
+  {
+    "id": "dest-1",
+    "name": "Goa",
+    "country": "India",
+    "image": "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=600&q=80",
+    "startingPrice": 2899,
+    "flightDuration": "1h 45m",
+    "tag": "Beach",
+    "rating": 4.7
+  },
+  {
+    "id": "dest-2",
+    "name": "Dubai",
+    "country": "UAE",
+    "image": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&q=80",
+    "startingPrice": 18500,
+    "flightDuration": "3h 30m",
+    "tag": "Luxury",
+    "rating": 4.9
+  },
+  {
+    "id": "dest-3",
+    "name": "Singapore",
+    "country": "Singapore",
+    "image": "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?w=600&q=80",
+    "startingPrice": 16200,
+    "flightDuration": "5h 20m",
+    "tag": "City",
+    "rating": 4.8
+  },
+  {
+    "id": "dest-4",
+    "name": "Manali",
+    "country": "India",
+    "image": "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+    "startingPrice": 3200,
+    "flightDuration": "1h 30m",
+    "tag": "Mountains",
+    "rating": 4.6
+  },
+  {
+    "id": "dest-5",
+    "name": "Bali",
+    "country": "Indonesia",
+    "image": "https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=600&q=80",
+    "startingPrice": 22000,
+    "flightDuration": "6h 10m",
+    "tag": "Tropical",
+    "rating": 4.9
+  },
+  {
+    "id": "dest-6",
+    "name": "Paris",
+    "country": "France",
+    "image": "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600&q=80",
+    "startingPrice": 45000,
+    "flightDuration": "9h 30m",
+    "tag": "Romance",
+    "rating": 4.8
+  }
+]

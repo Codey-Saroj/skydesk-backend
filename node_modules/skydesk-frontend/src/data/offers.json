@@ -1,0 +1,46 @@
+[
+  {
+    "id": "offer-1",
+    "title": "20% Off International Flights",
+    "description": "Book any international flight and save 20% this season. Valid on all cabin classes.",
+    "code": "INTL20",
+    "validUntil": "2026-07-31",
+    "badge": "HOT",
+    "gradient": "from-blue-600 to-blue-800",
+    "icon": "Globe",
+    "discount": "20% OFF"
+  },
+  {
+    "id": "offer-2",
+    "title": "Weekend Getaway Deals",
+    "description": "Fly out Friday, return Sunday. Special weekend pricing on select domestic routes.",
+    "code": "WKND50",
+    "validUntil": "2026-07-27",
+    "badge": "LIMITED",
+    "gradient": "from-orange-500 to-red-500",
+    "icon": "Sunset",
+    "discount": "₹500 OFF"
+  },
+  {
+    "id": "offer-3",
+    "title": "Student Discount Special",
+    "description": "Verified students get exclusive discounts on all routes. Show your ID at check-in.",
+    "code": "STUDENT15",
+    "validUntil": "2026-08-31",
+    "badge": "NEW",
+    "gradient": "from-purple-500 to-indigo-600",
+    "icon": "GraduationCap",
+    "discount": "15% OFF"
+  },
+  {
+    "id": "offer-4",
+    "title": "HDFC Credit Card Offer",
+    "description": "Get ₹1500 cashback on bookings above ₹10,000 with your HDFC credit card.",
+    "code": "HDFC1500",
+    "validUntil": "2026-07-20",
+    "badge": "BANK OFFER",
+    "gradient": "from-teal-500 to-cyan-600",
+    "icon": "CreditCard",
+    "discount": "₹1500 CB"
+  }
+]

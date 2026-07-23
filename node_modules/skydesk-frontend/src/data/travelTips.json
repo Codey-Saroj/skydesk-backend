@@ -1,0 +1,34 @@
+[
+  {
+    "id": "tip-1",
+    "title": "Visa Updates",
+    "description": "Thailand visa-on-arrival extended to 60 days for Indian passport holders.",
+    "icon": "FileText",
+    "color": "blue",
+    "tag": "VISA"
+  },
+  {
+    "id": "tip-2",
+    "title": "Weather Alert",
+    "description": "Monsoon season active in Mumbai and Goa. Expect possible delays.",
+    "icon": "CloudRain",
+    "color": "cyan",
+    "tag": "WEATHER"
+  },
+  {
+    "id": "tip-3",
+    "title": "Travel Guidelines",
+    "description": "New baggage policy: 15kg free check-in on domestic routes for all passengers.",
+    "icon": "Luggage",
+    "color": "purple",
+    "tag": "BAGGAGE"
+  },
+  {
+    "id": "tip-4",
+    "title": "Airport Info",
+    "description": "DEL T3 security wait time is 20-30 min. Arrive 3 hrs before international flights.",
+    "icon": "MapPin",
+    "color": "orange",
+    "tag": "AIRPORT"
+  }
+]

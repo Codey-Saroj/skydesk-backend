@@ -1,0 +1,35 @@
+[
+  {
+    "id": "rs-1",
+    "from": "Delhi",
+    "fromCode": "DEL",
+    "to": "Mumbai",
+    "toCode": "BOM",
+    "searchedOn": "2026-07-09",
+    "minPrice": 3499,
+    "passengers": 1,
+    "class": "Economy"
+  },
+  {
+    "id": "rs-2",
+    "from": "Jaipur",
+    "fromCode": "JAI",
+    "to": "Goa",
+    "toCode": "GOI",
+    "searchedOn": "2026-07-08",
+    "minPrice": 4200,
+    "passengers": 2,
+    "class": "Economy"
+  },
+  {
+    "id": "rs-3",
+    "from": "Bangalore",
+    "fromCode": "BLR",
+    "to": "Dubai",
+    "toCode": "DXB",
+    "searchedOn": "2026-07-07",
+    "minPrice": 18500,
+    "passengers": 1,
+    "class": "Business"
+  }
+]
