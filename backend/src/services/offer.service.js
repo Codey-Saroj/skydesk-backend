@@ -1,19 +1,30 @@
 // src/services/offer.service.js
 // Offer retrieval logic.
 
-import { query } from '../config/db.js';
+import prisma from '../lib/prisma.js';
 
 /**
  * Fetch all active, non-expired offers.
  * @returns {object[]}
  */
 export const getActiveOffers = async () => {
-  const result = await query(
-    `SELECT id, title, description, code, discount, badge, valid_until, created_at
-     FROM offers
-     WHERE is_active = true
-       AND (valid_until IS NULL OR valid_until >= CURRENT_DATE)
-     ORDER BY created_at DESC`
-  );
-  return result.rows;
+  const offers = await prisma.offers.findMany({
+    where: {
+      is_active: true,
+      OR: [{ valid_until: null }, { valid_until: { gte: new Date() } }],
+    },
+    orderBy: { created_at: 'desc' },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      code: true,
+      discount: true,
+      badge: true,
+      valid_until: true,
+      created_at: true,
+    },
+  });
+
+  return offers;
 };

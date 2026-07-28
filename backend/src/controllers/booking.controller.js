@@ -26,13 +26,31 @@ export const getBookingById = async (req, res, next) => {
 
 export const createBooking = async (req, res, next) => {
   try {
-    const { flight_id, passengers } = req.body;
+    const {
+      flight_id,
+      passengers,
+      seat_number,
+      cabin_class,
+      total_price
+    } = req.body;
+
     const booking = await bookingService.createBooking(
       req.user.id,
       parseInt(flight_id, 10),
-      parseInt(passengers, 10) || 1
+      parseInt(passengers, 10) || 1,
+      {
+        seat_number,
+        cabin_class,
+        total_price
+      }
     );
-    sendSuccess(res, { booking }, 'Booking confirmed successfully.', HTTP_STATUS.CREATED);
+
+    sendSuccess(
+      res,
+      { booking },
+      'Booking confirmed successfully.',
+      HTTP_STATUS.CREATED
+    );
   } catch (err) {
     next(err);
   }

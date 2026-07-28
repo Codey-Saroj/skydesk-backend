@@ -1,7 +1,7 @@
 // src/services/flight.service.js
 // Flight search and retrieval logic.
 
-import { query } from '../config/db.js';
+import prisma from '../lib/prisma.js';
 import AppError from '../utils/AppError.js';
 
 /**
@@ -11,38 +11,48 @@ import AppError from '../utils/AppError.js';
  * @param {{ origin?: string, destination?: string, date?: string, cabin_class?: string }} filters
  * @returns {object[]} Array of flight rows
  */
-export const searchFlights = async ({ origin, destination, date, cabin_class } = {}) => {
-  const conditions = [];
-  const params = [];
+export const searchFlights = async ({
+  origin,
+  destination,
+  date,
+  cabin_class,
+} = {}) => {
+
+  const where = {};
 
   if (origin) {
-    params.push(origin.toUpperCase());
-    conditions.push(`origin = $${params.length}`);
+    where.origin = origin.toUpperCase();
   }
 
   if (destination) {
-    params.push(destination.toUpperCase());
-    conditions.push(`destination = $${params.length}`);
-  }
-
-  if (date) {
-    params.push(date);
-    conditions.push(`DATE(departure_time AT TIME ZONE 'UTC') = $${params.length}`);
+    where.destination = destination.toUpperCase();
   }
 
   if (cabin_class) {
-    params.push(cabin_class);
-    conditions.push(`LOWER(cabin_class) = LOWER($${params.length})`);
+    where.cabin_class = {
+      equals: cabin_class,
+      mode: 'insensitive',
+    };
   }
 
-  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+  if (date) {
+    const start = new Date(date);
+    const end = new Date(date);
 
-  const result = await query(
-    `SELECT * FROM flights ${where} ORDER BY departure_time ASC`,
-    params
-  );
+    end.setDate(end.getDate() + 1);
 
-  return result.rows;
+    where.departure_time = {
+      gte: start,
+      lt: end,
+    };
+  }
+
+  return await prisma.flights.findMany({
+    where,
+    orderBy: {
+      departure_time: 'asc',
+    },
+  });
 };
 
 /**
@@ -52,11 +62,16 @@ export const searchFlights = async ({ origin, destination, date, cabin_class } =
  * @returns {object} Flight row
  */
 export const getFlightById = async (id) => {
-  const result = await query('SELECT * FROM flights WHERE id = $1', [id]);
 
-  if (result.rows.length === 0) {
+  const flight = await prisma.flights.findUnique({
+    where: {
+      id: Number(id),
+    },
+  });
+
+  if (!flight) {
     throw new AppError('Flight not found.', 404);
   }
 
-  return result.rows[0];
+  return flight;
 };

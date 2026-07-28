@@ -1,7 +1,7 @@
 // src/services/trip.service.js
 // Trip retrieval logic.
 
-import { query } from '../config/db.js';
+import prisma from '../lib/prisma.js';
 
 /**
  * Fetch all trips for a user with their linked booking and flight details.
@@ -10,31 +10,49 @@ import { query } from '../config/db.js';
  * @returns {object[]}
  */
 export const getUserTrips = async (userId) => {
-  const result = await query(
-    `SELECT
-       t.id,
-       t.title,
-       t.destination,
-       t.start_date,
-       t.end_date,
-       t.status,
-       t.created_at,
-       b.booking_ref,
-       b.pnr,
-       b.status AS booking_status,
-       f.flight_number,
-       f.airline,
-       f.origin,
-       f.destination  AS flight_destination,
-       f.departure_time,
-       f.arrival_time,
-       f.cabin_class
-     FROM trips t
-     LEFT JOIN bookings b ON b.id = t.booking_id
-     LEFT JOIN flights  f ON f.id = b.flight_id
-     WHERE t.user_id = $1
-     ORDER BY t.start_date DESC NULLS LAST`,
-    [userId]
-  );
-  return result.rows;
+  const trips = await prisma.trips.findMany({
+    where: { user_id: userId },
+    orderBy: [{ start_date: 'desc' }, { created_at: 'desc' }],
+    select: {
+      id: true,
+      title: true,
+      destination: true,
+      start_date: true,
+      end_date: true,
+      status: true,
+      created_at: true,
+      bookings: {
+        select: {
+          booking_ref: true,
+          pnr: true,
+          status: true,
+          flights: {
+            select: {
+              flight_number: true,
+              airline: true,
+              origin: true,
+              destination: true,
+              departure_time: true,
+              arrival_time: true,
+              cabin_class: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return trips.map((trip) => ({
+    ...trip,
+    booking_ref: trip.bookings?.booking_ref ?? null,
+    pnr: trip.bookings?.pnr ?? null,
+    booking_status: trip.bookings?.status ?? null,
+    flight_number: trip.bookings?.flights?.flight_number ?? null,
+    airline: trip.bookings?.flights?.airline ?? null,
+    origin: trip.bookings?.flights?.origin ?? null,
+    flight_destination: trip.bookings?.flights?.destination ?? null,
+    departure_time: trip.bookings?.flights?.departure_time ?? null,
+    arrival_time: trip.bookings?.flights?.arrival_time ?? null,
+    cabin_class: trip.bookings?.flights?.cabin_class ?? null,
+  }));
 };

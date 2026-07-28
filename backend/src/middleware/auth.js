@@ -1,9 +1,9 @@
 // src/middleware/auth.js
 // JWT authentication + role-based authorization middleware.
 
+import prisma from '../lib/prisma.js';
 import { verifyToken } from '../utils/jwt.js';
 import AppError from '../utils/AppError.js';
-import { query } from '../config/db.js';
 
 /**
  * authenticate
@@ -26,17 +26,24 @@ export const authenticate = async (req, res, next) => {
 
     const decoded = verifyToken(token); // throws AppError with status 401 if invalid/expired
 
-    // Fetch user row from DB to confirm user still exists
-    const result = await query(
-      'SELECT id, name, email, role, avatar_url, created_at, updated_at FROM users WHERE id = $1',
-      [decoded.id]
-    );
+    const user = await prisma.users.findUnique({
+      where: { id: decoded.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar_url: true,
+        created_at: true,
+        updated_at: true,
+      },
+    });
 
-    if (result.rows.length === 0) {
+    if (!user) {
       throw new AppError('User no longer exists.', 401);
     }
 
-    req.user = result.rows[0];
+    req.user = user;
     next();
   } catch (err) {
     next(err);

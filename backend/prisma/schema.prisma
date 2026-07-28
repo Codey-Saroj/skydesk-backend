@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model bookings {
+  id           Int            @id @default(autoincrement())
+  user_id      Int
+  flight_id    Int
+  booking_ref  String         @unique @db.VarChar(20)
+  pnr          String?        @db.VarChar(10)
+  status       booking_status @default(confirmed)
+  passengers   Int            @default(1)
+  total_price  Decimal        @db.Decimal(10, 2)
+  seat_number  String?        @db.VarChar(10)
+  terminal     String?        @db.VarChar(10)
+  gate         String?        @db.VarChar(10)
+  booking_date DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime       @default(now()) @db.Timestamptz(6)
+  flights      flights        @relation(fields: [flight_id], references: [id], onUpdate: NoAction)
+  users        users          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  trips        trips[]
+  cabin_class String? @db.VarChar(30)
+
+  @@index([user_id], map: "idx_bookings_user")
+}
+
+model expenses {
+  id           Int              @id @default(autoincrement())
+  user_id      Int
+  trip_id      Int?
+  title        String           @db.VarChar(200)
+  amount       Decimal          @db.Decimal(10, 2)
+  category     expense_category @default(other)
+  status       expense_status   @default(pending)
+  expense_date DateTime         @default(dbgenerated("CURRENT_DATE")) @db.Date
+  receipt_url  String?
+  notes        String?
+  created_at   DateTime         @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime         @default(now()) @db.Timestamptz(6)
+  trips        trips?           @relation(fields: [trip_id], references: [id], onUpdate: NoAction)
+  users        users            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([expense_date], map: "idx_expenses_date")
+  @@index([trip_id], map: "idx_expenses_trip")
+  @@index([user_id], map: "idx_expenses_user")
+}
+
+model flights {
+  id               Int        @id @default(autoincrement())
+  flight_number    String     @db.VarChar(20)
+  airline          String     @db.VarChar(100)
+  origin           String     @db.VarChar(10)
+  destination      String     @db.VarChar(10)
+  origin_city      String?    @db.VarChar(100)
+  destination_city String?    @db.VarChar(100)
+  departure_time   DateTime   @db.Timestamptz(6)
+  arrival_time     DateTime   @db.Timestamptz(6)
+  duration         String?    @db.VarChar(20)
+  stops            String     @default("Non-stop") @db.VarChar(50)
+  price            Decimal    @db.Decimal(10, 2)
+  cabin_class      String     @default("Economy") @db.VarChar(50)
+  available_seats  Int        @default(0)
+  created_at       DateTime   @default(now()) @db.Timestamptz(6)
+  bookings         bookings[]
+
+  @@index([departure_time], map: "idx_flights_departure")
+  @@index([origin, destination], map: "idx_flights_route")
+}
+
+model offers {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(200)
+  description String?
+  code        String    @unique @db.VarChar(50)
+  discount    String?   @db.VarChar(50)
+  badge       String?   @db.VarChar(50)
+  valid_until DateTime? @db.Date
+  is_active   Boolean   @default(true)
+  created_at  DateTime  @default(now()) @db.Timestamptz(6)
+}
+
+model support_tickets {
+  id         Int           @id @default(autoincrement())
+  user_id    Int
+  subject    String        @db.VarChar(300)
+  message    String
+  status     ticket_status @default(open)
+  created_at DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at DateTime      @default(now()) @db.Timestamptz(6)
+  users      users         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_tickets_user")
+}
+
+model trips {
+  id          Int         @id @default(autoincrement())
+  user_id     Int
+  booking_id  Int?
+  title       String      @db.VarChar(200)
+  destination String?     @db.VarChar(150)
+  start_date  DateTime?   @db.Date
+  end_date    DateTime?   @db.Date
+  status      trip_status @default(upcoming)
+  created_at  DateTime    @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime    @default(now()) @db.Timestamptz(6)
+  expenses    expenses[]
+  bookings    bookings?   @relation(fields: [booking_id], references: [id], onUpdate: NoAction)
+  users       users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_trips_user")
+}
+
+model users {
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar(150)
+  email           String            @unique @db.VarChar(255)
+  password        String            @db.VarChar(255)
+  role            user_role         @default(employee)
+  avatar_url      String?
+  created_at      DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime          @default(now()) @db.Timestamptz(6)
+  bookings        bookings[]
+  expenses        expenses[]
+  support_tickets support_tickets[]
+  trips           trips[]
+}
+
+enum booking_status {
+  confirmed
+  cancelled
+  completed
+  pending
+}
+
+enum expense_category {
+  meals
+  transport
+  accommodation
+  communication
+  other
+}
+
+enum expense_status {
+  pending
+  approved
+  rejected
+}
+
+enum ticket_status {
+  open
+  in_progress
+  resolved
+  closed
+}
+
+enum trip_status {
+  upcoming
+  ongoing
+  completed
+  cancelled
+}
+
+enum user_role {
+  employee
+  admin
+}

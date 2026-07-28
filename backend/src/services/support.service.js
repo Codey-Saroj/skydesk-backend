@@ -1,7 +1,7 @@
 // src/services/support.service.js
 // Support ticket creation logic.
 
-import { query } from '../config/db.js';
+import prisma from '../lib/prisma.js';
 
 /**
  * Create a support ticket for the authenticated user.
@@ -12,13 +12,20 @@ import { query } from '../config/db.js';
  * @returns {object} Created ticket row
  */
 export const createTicket = async (userId, subject, message) => {
-  const result = await query(
-    `INSERT INTO support_tickets (user_id, subject, message)
-     VALUES ($1, $2, $3)
-     RETURNING id, subject, message, status, created_at`,
-    [userId, subject, message]
-  );
-  return result.rows[0];
+  return prisma.support_tickets.create({
+    data: {
+      user_id: userId,
+      subject,
+      message,
+    },
+    select: {
+      id: true,
+      subject: true,
+      message: true,
+      status: true,
+      created_at: true,
+    },
+  });
 };
 
 /**
@@ -28,12 +35,16 @@ export const createTicket = async (userId, subject, message) => {
  * @returns {object[]}
  */
 export const getUserTickets = async (userId) => {
-  const result = await query(
-    `SELECT id, subject, message, status, created_at, updated_at
-     FROM support_tickets
-     WHERE user_id = $1
-     ORDER BY created_at DESC`,
-    [userId]
-  );
-  return result.rows;
+  return prisma.support_tickets.findMany({
+    where: { user_id: userId },
+    orderBy: { created_at: 'desc' },
+    select: {
+      id: true,
+      subject: true,
+      message: true,
+      status: true,
+      created_at: true,
+      updated_at: true,
+    },
+  });
 };

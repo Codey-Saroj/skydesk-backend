@@ -1,3 +1,4 @@
+import { useAuth } from '../context/AuthContext'
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
@@ -7,7 +8,7 @@ import {
 import { formatCurrency } from '../utils/formatters'
 import { apiFetch } from '../utils/api'
 import { mapFlight } from '../utils/mappers'
-import { useAuth } from '../context/AuthContext.jsx'
+
 
 const airlineLogos = {
   IndiGo: '6E',
@@ -40,7 +41,7 @@ export default function FlightDetails() {
       .finally(() => setLoadingFlight(false))
   }, [id])
 
-  const [booked, setBooked] = useState(false)
+ const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [bookingResult, setBookingResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [bookError, setBookError] = useState('')
@@ -116,51 +117,24 @@ export default function FlightDetails() {
     apiFetch('/bookings', {
       method: 'POST',
       auth: true,
-      body: { flight_id: flight.id, passengers: 1 },
+      body: {
+  flight_id: flight.id,
+  passengers: 1,
+
+  seat_number: selectedSeat,
+  cabin_class: fareClass,
+  total_price: total
+},
     })
       .then((res) => {
-        setBookingResult(res.data.booking)
-        setBooked(true)
+       setBookingResult(res.data.booking)
+       setShowSuccessModal(true)
       })
       .catch((err) => setBookError(err.message || 'Booking failed. Please try again.'))
       .finally(() => setLoading(false))
   }
 
-  if (booked) {
-    return (
-      <div className="max-w-xl mx-auto">
-        <div className="bg-white rounded-2xl border border-[#E2E8F0] p-10 flex flex-col items-center text-center shadow-sm">
-          <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mb-4">
-            <CheckCircle2 size={32} className="text-green-600" />
-          </div>
-          <h1 className="text-xl font-bold text-[#0F172A]">Booking Confirmed!</h1>
-          <p className="text-[#64748B] text-sm mt-2 leading-relaxed">
-            {flight.airline} {flight.flightNo} · {flight.from} → {flight.to} has been added to your
-            bookings.
-          </p>
-          <div className="mt-4 bg-slate-50 border border-[#E2E8F0] rounded-xl px-5 py-3 text-sm text-[#64748B] font-semibold">
-            PNR: <span className="font-mono font-black text-[#0F172A] tracking-widest">
-              {bookingResult?.pnr}
-            </span>
-          </div>
-          <div className="mt-6 flex gap-3">
-            <Link
-              to="/bookings"
-              className="bg-[#2563EB] hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors shadow-sm"
-            >
-              View My Trips
-            </Link>
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="border border-[#E2E8F0] text-[#64748B] hover:bg-slate-50 font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors"
-            >
-              Go to Dashboard
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  }
+  
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -467,6 +441,54 @@ export default function FlightDetails() {
           </button>
         </div>
       </div>
+      {showSuccessModal && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-2xl p-8 w-[420px] shadow-2xl text-center">
+      <CheckCircle2
+        size={60}
+        className="text-green-500 mx-auto mb-4"
+      />
+
+      <h2 className="text-2xl font-bold text-slate-900">
+        Booking Confirmed!
+      </h2>
+
+      <p className="text-slate-500 mt-2">
+        Your flight has been booked successfully.
+      </p>
+
+      <div className="mt-6 bg-slate-100 rounded-xl p-4">
+        <p className="text-xs text-slate-500 uppercase">PNR Number</p>
+
+        <p className="text-2xl font-bold tracking-widest text-[#2563EB] mt-1">
+          {bookingResult?.pnr}
+        </p>
+      </div>
+
+      <div className="mt-6 flex gap-3">
+        <button
+          onClick={() => {
+            setShowSuccessModal(false)
+            navigate('/bookings')
+          }}
+          className="flex-1 bg-[#2563EB] text-white py-3 rounded-xl font-semibold"
+        >
+          My Bookings
+        </button>
+
+        <button
+          onClick={() => {
+            setShowSuccessModal(false)
+            navigate('/dashboard')
+          }}
+          className="flex-1 border border-slate-300 py-3 rounded-xl font-semibold"
+        >
+          Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   )
 }

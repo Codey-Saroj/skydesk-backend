@@ -1,7 +1,7 @@
 // src/services/expense.service.js
 // Expense retrieval and creation logic.
 
-import { query } from '../config/db.js';
+import prisma from '../lib/prisma.js';
 import AppError from '../utils/AppError.js';
 
 /**
@@ -12,45 +12,48 @@ import AppError from '../utils/AppError.js';
  * @returns {object[]}
  */
 export const getUserExpenses = async (userId, { category, status, trip_id } = {}) => {
-  const conditions = ['e.user_id = $1'];
-  const params = [userId];
+  const where = {
+    user_id: userId,
+  };
 
   if (category) {
-    params.push(category);
-    conditions.push(`e.category = $${params.length}`);
+    where.category = category;
   }
 
   if (status) {
-    params.push(status);
-    conditions.push(`e.status = $${params.length}`);
+    where.status = status;
   }
 
   if (trip_id) {
-    params.push(trip_id);
-    conditions.push(`e.trip_id = $${params.length}`);
+    where.trip_id = trip_id;
   }
 
-  const result = await query(
-    `SELECT
-       e.id,
-       e.title,
-       e.amount,
-       e.category,
-       e.status,
-       e.expense_date,
-       e.receipt_url,
-       e.notes,
-       e.created_at,
-       e.updated_at,
-       t.title AS trip_title
-     FROM expenses e
-     LEFT JOIN trips t ON t.id = e.trip_id
-     WHERE ${conditions.join(' AND ')}
-     ORDER BY e.expense_date DESC, e.created_at DESC`,
-    params
-  );
+  const expenses = await prisma.expenses.findMany({
+    where,
+    orderBy: [{ expense_date: 'desc' }, { created_at: 'desc' }],
+    select: {
+      id: true,
+      title: true,
+      amount: true,
+      category: true,
+      status: true,
+      expense_date: true,
+      receipt_url: true,
+      notes: true,
+      created_at: true,
+      updated_at: true,
+      trips: {
+        select: {
+          title: true,
+        },
+      },
+    },
+  });
 
-  return result.rows;
+  return expenses.map((expense) => ({
+    ...expense,
+    trip_title: expense.trips?.title ?? null,
+  }));
 };
 
 /**
@@ -61,14 +64,17 @@ export const getUserExpenses = async (userId, { category, status, trip_id } = {}
  * @returns {object} Created expense row
  */
 export const createExpense = async (userId, { title, amount, category, expense_date, trip_id, notes }) => {
-  const result = await query(
-    `INSERT INTO expenses (user_id, title, amount, category, expense_date, trip_id, notes)
-     VALUES ($1, $2, $3, $4, $5, $6, $7)
-     RETURNING *`,
-    [userId, title, amount, category, expense_date, trip_id || null, notes || null]
-  );
-
-  return result.rows[0];
+  return prisma.expenses.create({
+    data: {
+      user_id: userId,
+      title,
+      amount,
+      category,
+      expense_date,
+      trip_id: trip_id || null,
+      notes: notes || null,
+    },
+  });
 };
 
 /**
@@ -79,14 +85,16 @@ export const createExpense = async (userId, { title, amount, category, expense_d
  * @returns {object}
  */
 export const getExpenseById = async (userId, expenseId) => {
-  const result = await query(
-    'SELECT * FROM expenses WHERE id = $1 AND user_id = $2',
-    [expenseId, userId]
-  );
+  const expense = await prisma.expenses.findFirst({
+    where: {
+      id: expenseId,
+      user_id: userId,
+    },
+  });
 
-  if (result.rows.length === 0) {
+  if (!expense) {
     throw new AppError('Expense not found.', 404);
   }
 
-  return result.rows[0];
+  return expense;
 };
